@@ -51,7 +51,7 @@ namespace Instancing
 
         protected override void CreateResources(ResourceFactory factory)
         {
-            _instanceCount = 64000;
+            _instanceCount = 1<<14;
 
             _camera.Position = new Vector3(-36f, 20f, 100f);
             _camera.Pitch = -0.3f;
@@ -133,7 +133,7 @@ namespace Instancing
                     //    (float)(r.NextDouble() * Math.PI * 2),
                     //    (float)(r.NextDouble() * Math.PI * 2),
                     //    (float)(r.NextDouble() * Math.PI * 2)),
-                    new Vector3((float)(r.NextDouble()*0.1)),
+                    new Vector3((float)(r.NextDouble()*0.3)),
                     r.Next(0, (int)rockTexture.ArrayLayers));
             }
 
