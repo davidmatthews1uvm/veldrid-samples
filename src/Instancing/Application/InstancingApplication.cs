@@ -26,7 +26,8 @@ namespace Instancing
         // Resources for instanced rocks
         private Pipeline _instancePipeline;
         private uint _instanceCount;
-        private DeviceBuffer _instanceVB;
+        private DeviceBuffer _instanceVBPos;
+        private DeviceBuffer _instanceVBScale;
         private DeviceBuffer _instanceVBColor;
         private ResourceSet _instanceTextureSet;
         private ModelResources _rockModel;
@@ -104,36 +105,46 @@ namespace Instancing
             ProcessedModel rock = LoadEmbeddedAsset<ProcessedModel>("sphere.binary");
             _rockModel = rock.MeshParts[0].CreateDeviceResources(GraphicsDevice, ResourceFactory);
 
-            VertexLayoutDescription vertexLayoutPerInstance = new VertexLayoutDescription(
-                new VertexElementDescription("InstancePosition", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
+            VertexLayoutDescription vertexLayoutPerInstancePos = new VertexLayoutDescription(
+                new VertexElementDescription("InstancePosition", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3));
+
+            VertexLayoutDescription vertexLayoutPerInstanceScale = new VertexLayoutDescription(
                 new VertexElementDescription("InstanceScale", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3));
-            vertexLayoutPerInstance.InstanceStepRate = 1;
-            _instanceVB = ResourceFactory.CreateBuffer(new BufferDescription(InstanceInfo.Size * _instanceCount, BufferUsage.VertexBuffer));
 
             VertexLayoutDescription vertexLayoutPerInstanceColor = new VertexLayoutDescription(
                 new VertexElementDescription("InstanceColor", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3));
+
+
+            vertexLayoutPerInstancePos.InstanceStepRate = 1;
+            vertexLayoutPerInstanceScale.InstanceStepRate = 1;
             vertexLayoutPerInstanceColor.InstanceStepRate = 1;
+
+            _instanceVBPos = ResourceFactory.CreateBuffer(new BufferDescription(Vector3.Size * _instanceCount, BufferUsage.VertexBuffer));
+            _instanceVBScale = ResourceFactory.CreateBuffer(new BufferDescription(Vector3.Size * _instanceCount, BufferUsage.VertexBuffer));
             _instanceVBColor = ResourceFactory.CreateBuffer(new BufferDescription(Vector3.Size * _instanceCount, BufferUsage.VertexBuffer));
 
-            InstanceInfo[] infos = new InstanceInfo[_instanceCount];
+
+            Vector3[] instancePos = new Vector3[_instanceCount];
+            Vector3[] instanceScale = new Vector3[_instanceCount];
             Vector3[] instanceColors = new Vector3[_instanceCount];
             Random r = new Random();
             for (uint i = 0; i < _instanceCount; i++)
             {
-                float angle = (float)(r.NextDouble() * Math.PI * 2);
-                infos[i] = new InstanceInfo(
-                    new Vector3(
+                instancePos[i] = new Vector3(
                         1000.0f * ((float)r.NextDouble() - 0.5f),
                         200.0f * ((float)r.NextDouble() - 0.5f),
-                        1000.0f * ((float)r.NextDouble() - 0.5f)),
-                    new Vector3((float)(r.NextDouble()*0.3)));
+                        1000.0f * ((float)r.NextDouble() - 0.5f));
+
+                instanceScale[i] = new Vector3((float)(r.NextDouble() * 0.3));
+
                 instanceColors[i] = new Vector3((float)r.NextDouble() * 0.5f + 0.5f,
                                                 (float)r.NextDouble() * 0.5f + 0.5f,
                                                 (float)r.NextDouble() * 0.5f + 0.5f);
             }
 
 
-            GraphicsDevice.UpdateBuffer(_instanceVB, 0, infos);
+            GraphicsDevice.UpdateBuffer(_instanceVBPos, 0, instancePos);
+            GraphicsDevice.UpdateBuffer(_instanceVBScale, 0, instanceScale);
             GraphicsDevice.UpdateBuffer(_instanceVBColor, 0, instanceColors);
 
             GraphicsPipelineDescription pipelineDescriptionRocks = new GraphicsPipelineDescription()
@@ -154,7 +165,7 @@ namespace Instancing
                 ResourceLayouts = new ResourceLayout[] { sharedLayout, textureLayout },
                 ShaderSet = new ShaderSetDescription(
                     // The ordering of layouts directly impacts shader layout schemes
-                    vertexLayouts: new VertexLayoutDescription[] { sharedVertexLayout, vertexLayoutPerInstance, vertexLayoutPerInstanceColor },
+                    vertexLayouts: new VertexLayoutDescription[] { sharedVertexLayout, vertexLayoutPerInstancePos, vertexLayoutPerInstanceScale, vertexLayoutPerInstanceColor },
                     shaders: LoadShaders("Instance")
                 ),
                 Outputs = MainSwapchain.Framebuffer.OutputDescription
@@ -217,8 +228,9 @@ namespace Instancing
 
             _commandList.SetVertexBuffer(0, _rockModel.VertexBuffer);
             _commandList.SetIndexBuffer(_rockModel.IndexBuffer, _rockModel.IndexFormat);
-            _commandList.SetVertexBuffer(1, _instanceVB);
-            _commandList.SetVertexBuffer(2, _instanceVBColor);
+            _commandList.SetVertexBuffer(1, _instanceVBPos);
+            _commandList.SetVertexBuffer(2, _instanceVBScale);
+            _commandList.SetVertexBuffer(3, _instanceVBColor);
 
             // Issue a Draw command for two instances with 4 indices.
             _commandList.DrawIndexed(
@@ -242,20 +254,6 @@ namespace Instancing
             return ResourceFactory.CreateFromSpirv(
                 new ShaderDescription(ShaderStages.Vertex, ReadEmbeddedAssetBytes(setName + "-vertex.glsl"), "main"),
                 new ShaderDescription(ShaderStages.Fragment, ReadEmbeddedAssetBytes(setName + "-fragment.glsl"), "main"));
-        }
-    }
-
-    public struct InstanceInfo
-    {
-        public static uint Size { get; } = (uint)Unsafe.SizeOf<InstanceInfo>();
-
-        public Vector3 Position;
-        public Vector3 Scale;
-
-        public InstanceInfo(Vector3 position, Vector3 scale)
-        {
-            Position = position;
-            Scale = scale;
         }
     }
 
