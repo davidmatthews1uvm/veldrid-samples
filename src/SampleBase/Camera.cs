@@ -55,50 +55,39 @@ namespace SampleBase
 
         public void Update(float deltaSeconds)
         {
-            float sprintFactor = InputTracker.GetKey(Key.ControlLeft)
-                ? 0.1f
-                : InputTracker.GetKey(Key.ShiftLeft)
-                    ? 5f
-                    : 1f;
-            sprintFactor *= InputTracker.GetKey(Key.Space) ? 10.0f : 1f; 
-            Vector3 motionDir = Vector3.Zero;
-            if (InputTracker.GetKey(Key.A))
+
+            // how much scrolling is being done?
+            float zoomFactor = (float)Math.Min((float)Math.Pow(InputTracker.WheelDelta, 2), 500.0f);
+            zoomFactor *= ((InputTracker.WheelDelta > 0) ? 1.0f : -1.0f);
+
+            Vector3 motionDir = Vector3.UnitZ * zoomFactor;
+
+            // get the mouse movement delta
+            Vector2 mouseDelta = InputTracker.MousePosition - _previousMousePos;
+            _previousMousePos = InputTracker.MousePosition;
+
+            // Right mouse button for pan
+
+            if (!InputTracker.GetMouseButton(MouseButton.Left) && InputTracker.GetMouseButton(MouseButton.Right))
             {
-                motionDir += -Vector3.UnitX;
-            }
-            if (InputTracker.GetKey(Key.D))
-            {
-                motionDir += Vector3.UnitX;
-            }
-            if (InputTracker.GetKey(Key.W))
-            {
-                motionDir += -Vector3.UnitZ;
-            }
-            if (InputTracker.GetKey(Key.S))
-            {
-                motionDir += Vector3.UnitZ;
-            }
-            if (InputTracker.GetKey(Key.Q))
-            {
-                motionDir += -Vector3.UnitY;
-            }
-            if (InputTracker.GetKey(Key.E))
-            {
-                motionDir += Vector3.UnitY;
+                motionDir += Vector3.UnitX * mouseDelta.X * -1;
+                motionDir += Vector3.UnitY * mouseDelta.Y;
             }
 
             if (motionDir != Vector3.Zero)
             {
                 Quaternion lookRotation = Quaternion.CreateFromYawPitchRoll(Yaw, Pitch, 0f);
                 motionDir = Vector3.Transform(motionDir, lookRotation);
-                _position += motionDir * MoveSpeed * sprintFactor * deltaSeconds;
+                _position += motionDir * MoveSpeed * deltaSeconds;
                 UpdateViewMatrix();
             }
 
-            Vector2 mouseDelta = InputTracker.MousePosition - _previousMousePos;
-            _previousMousePos = InputTracker.MousePosition;
+            
 
-            if (InputTracker.GetMouseButton(MouseButton.Left) || InputTracker.GetMouseButton(MouseButton.Right))
+
+            // Left mouse button for rotate
+
+            if (InputTracker.GetMouseButton(MouseButton.Left) && !InputTracker.GetMouseButton(MouseButton.Right))
             {
                 Yaw += -mouseDelta.X * 0.01f;
                 Pitch += -mouseDelta.Y * 0.01f;
