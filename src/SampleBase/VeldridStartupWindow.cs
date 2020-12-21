@@ -58,7 +58,18 @@ namespace SampleBase
 #if DEBUG
             options.Debug = true;
 #endif
-            _gd = VeldridStartup.CreateGraphicsDevice(_window, options, GraphicsBackend.Metal);
+
+            // construct a graphics device using the default backend.
+            _gd = VeldridStartup.CreateGraphicsDevice(_window, options);
+
+            // to determine what the default backend is you can run:
+            //VeldridStartup.GetPlatformDefaultBackend()
+
+            // to specify a specific backend use:
+            //_gd = VeldridStartup.CreateGraphicsDevice(_window, options, GraphicsBackend.Metal);
+
+
+
 
             _factory = new DisposeCollectorResourceFactory(_gd.ResourceFactory);
             GraphicsDeviceCreated?.Invoke(_gd, _factory, _gd.MainSwapchain);
