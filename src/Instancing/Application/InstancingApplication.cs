@@ -27,6 +27,7 @@ namespace Instancing
         private Pipeline _instancePipeline;
         private uint _instanceCount;
         private DeviceBuffer _instanceVB;
+        private DeviceBuffer _instanceVBColor;
         private ResourceSet _instanceTextureSet;
         private ModelResources _rockModel;
 
@@ -34,7 +35,7 @@ namespace Instancing
 
         // Dynamic data
         private Vector3 _lightDir;
-        private bool _lightFromCamera = false; // Press F1 to switch where the directional light originates
+        private bool _lightFromCamera = true; // Press F1 to switch where the directional light originates
         private DeviceBuffer _rotationInfoBuffer; // Contains the local and global rotation values.
         private float _localRotation = (float) Math.PI; // Causes individual rocks to rotate around their centers
         private float _globalRotation = (float) Math.PI; // Causes rocks to rotate around the global origin (where the planet is)
@@ -105,11 +106,17 @@ namespace Instancing
 
             VertexLayoutDescription vertexLayoutPerInstance = new VertexLayoutDescription(
                 new VertexElementDescription("InstancePosition", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
-                new VertexElementDescription("InstanceScale", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
-                new VertexElementDescription("InstanceTexArrayIndex", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Int1));
+                new VertexElementDescription("InstanceScale", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3));
             vertexLayoutPerInstance.InstanceStepRate = 1;
             _instanceVB = ResourceFactory.CreateBuffer(new BufferDescription(InstanceInfo.Size * _instanceCount, BufferUsage.VertexBuffer));
+
+            VertexLayoutDescription vertexLayoutPerInstanceColor = new VertexLayoutDescription(
+                new VertexElementDescription("InstanceColor", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3));
+            vertexLayoutPerInstanceColor.InstanceStepRate = 1;
+            _instanceVBColor = ResourceFactory.CreateBuffer(new BufferDescription(Vector3.Size * _instanceCount, BufferUsage.VertexBuffer));
+
             InstanceInfo[] infos = new InstanceInfo[_instanceCount];
+            Vector3[] instanceColors = new Vector3[_instanceCount];
             Random r = new Random();
             for (uint i = 0; i < _instanceCount; i++)
             {
@@ -119,12 +126,15 @@ namespace Instancing
                         1000.0f * ((float)r.NextDouble() - 0.5f),
                         200.0f * ((float)r.NextDouble() - 0.5f),
                         1000.0f * ((float)r.NextDouble() - 0.5f)),
-                    new Vector3((float)(r.NextDouble()*0.3)),
-                    r.Next(0, (int)rockTexture.ArrayLayers));
+                    new Vector3((float)(r.NextDouble()*0.3)));
+                instanceColors[i] = new Vector3((float)r.NextDouble() * 0.5f + 0.5f,
+                                                (float)r.NextDouble() * 0.5f + 0.5f,
+                                                (float)r.NextDouble() * 0.5f + 0.5f);
             }
 
 
             GraphicsDevice.UpdateBuffer(_instanceVB, 0, infos);
+            GraphicsDevice.UpdateBuffer(_instanceVBColor, 0, instanceColors);
 
             GraphicsPipelineDescription pipelineDescriptionRocks = new GraphicsPipelineDescription()
             {
@@ -144,7 +154,7 @@ namespace Instancing
                 ResourceLayouts = new ResourceLayout[] { sharedLayout, textureLayout },
                 ShaderSet = new ShaderSetDescription(
                     // The ordering of layouts directly impacts shader layout schemes
-                    vertexLayouts: new VertexLayoutDescription[] { sharedVertexLayout, vertexLayoutPerInstance },
+                    vertexLayouts: new VertexLayoutDescription[] { sharedVertexLayout, vertexLayoutPerInstance, vertexLayoutPerInstanceColor },
                     shaders: LoadShaders("Instance")
                 ),
                 Outputs = MainSwapchain.Framebuffer.OutputDescription
@@ -208,6 +218,7 @@ namespace Instancing
             _commandList.SetVertexBuffer(0, _rockModel.VertexBuffer);
             _commandList.SetIndexBuffer(_rockModel.IndexBuffer, _rockModel.IndexFormat);
             _commandList.SetVertexBuffer(1, _instanceVB);
+            _commandList.SetVertexBuffer(2, _instanceVBColor);
 
             // Issue a Draw command for two instances with 4 indices.
             _commandList.DrawIndexed(
@@ -239,16 +250,12 @@ namespace Instancing
         public static uint Size { get; } = (uint)Unsafe.SizeOf<InstanceInfo>();
 
         public Vector3 Position;
-        //public Vector3 Rotation;
         public Vector3 Scale;
-        public int TexArrayIndex;
 
-        public InstanceInfo(Vector3 position, Vector3 scale, int texArrayIndex)
+        public InstanceInfo(Vector3 position, Vector3 scale)
         {
             Position = position;
-            //Rotation = rotation;
             Scale = scale;
-            TexArrayIndex = texArrayIndex;
         }
     }
 
@@ -271,6 +278,7 @@ namespace Instancing
 
     public struct Vector3
     {
+        public static uint Size { get; } = (uint)Unsafe.SizeOf<Vector3>();
         public float X;
         public float Y;
         public float Z;

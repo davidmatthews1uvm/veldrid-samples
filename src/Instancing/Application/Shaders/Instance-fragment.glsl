@@ -13,7 +13,6 @@ layout(set = 1, binding = 1) uniform sampler Samp;
 
 layout(location = 0) in vec3 fsin_Position_WorldSpace;
 layout(location = 1) in vec3 fsin_Normal;
-//layout(location = 2) in vec3 fsin_TexCoord;
 layout (location = 2) in vec4 fsin_Color;
 layout (location = 3) in vec3 fsin_v_center;
 layout (location = 4) in float fsin_radius;
@@ -22,11 +21,6 @@ layout(location = 0) out vec4 outputColor;
 
 void main()
 {
-//    vec3 p = (gl_FragCoord.xyz - fsin_v_center.xyz)/fsin_radius;
-//    float z = 1.0 - length(p);
-//    if (z < -1000.0) discard;
-//  
-//    gl_FragDepth = 0.5*fsin_v_center.z + 0.5*(1.0 - z);
     vec4 texColor = fsin_Color; //texture(sampler2DArray(Tex, Samp), fsin_TexCoord);
 
     float diffuseIntensity = clamp(dot(fsin_Normal, -LightDirection), 0, 1);
@@ -47,6 +41,4 @@ void main()
     }
 
     outputColor = diffuseColor + specColor;
-  //  outputColor *= 0.5;
-  //  outputColor += 0.5*fsin_Color;
 }
