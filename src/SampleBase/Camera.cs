@@ -8,8 +8,8 @@ namespace SampleBase
     public class Camera
     {
         private float _fov = 1f;
-        private float _near = 1f;
-        private float _far = 1000f;
+        private float _near = 0.01f;
+        private float _far = 10000f;
 
         private Matrix4x4 _viewMatrix;
         private Matrix4x4 _projectionMatrix;
@@ -58,8 +58,9 @@ namespace SampleBase
             float sprintFactor = InputTracker.GetKey(Key.ControlLeft)
                 ? 0.1f
                 : InputTracker.GetKey(Key.ShiftLeft)
-                    ? 2.5f
+                    ? 5f
                     : 1f;
+            sprintFactor *= InputTracker.GetKey(Key.Space) ? 10.0f : 1f; 
             Vector3 motionDir = Vector3.Zero;
             if (InputTracker.GetKey(Key.A))
             {
