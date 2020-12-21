@@ -19,6 +19,7 @@ namespace SampleBase
         public event Action GraphicsDeviceDestroyed;
         public event Action Resized;
         public event Action<KeyEvent> KeyPressed;
+        public event Action Shutdown;
 
         public uint Width => (uint)_window.Width;
         public uint Height => (uint)_window.Height;
@@ -97,6 +98,8 @@ namespace SampleBase
                     Rendering?.Invoke(deltaSeconds);
                 }
             }
+
+            Shutdown?.Invoke();
 
             _gd.WaitForIdle();
             _factory.DisposeCollector.DisposeAll();

@@ -41,7 +41,13 @@ namespace Instancing
         private float _localRotation = (float) Math.PI; // Causes individual rocks to rotate around their centers
         private float _globalRotation = (float) Math.PI; // Causes rocks to rotate around the global origin (where the planet is)
 
-        public InstancingApplication(ApplicationWindow window) : base(window) { }
+        public InstancingApplication(ApplicationWindow window) : base(window)
+        {
+            window.Shutdown += () =>
+            {
+                Console.WriteLine("Shutdown for InstancingApplication was run!");
+            };
+        }
 
         protected override void CreateResources(ResourceFactory factory)
         {
