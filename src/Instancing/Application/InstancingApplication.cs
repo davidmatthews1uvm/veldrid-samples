@@ -30,15 +30,7 @@ namespace Instancing
         private ResourceSet _instanceTextureSet;
         private ModelResources _rockModel;
 
-        // Resources for central planet
-        //private Pipeline _planetPipeline;
-        //private ResourceSet _planetTextureSet;
-        //private ModelResources _planetModel;
-
-        // Resources for the background starfield
-        //private Pipeline _starfieldPipeline;
         private DeviceBuffer _viewInfoBuffer;
-        //private ResourceSet _viewInfoSet;
 
         // Dynamic data
         private Vector3 _lightDir;
@@ -113,14 +105,12 @@ namespace Instancing
 
             VertexLayoutDescription vertexLayoutPerInstance = new VertexLayoutDescription(
                 new VertexElementDescription("InstancePosition", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
-                //new VertexElementDescription("InstanceRotation", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
                 new VertexElementDescription("InstanceScale", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
                 new VertexElementDescription("InstanceTexArrayIndex", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Int1));
             vertexLayoutPerInstance.InstanceStepRate = 1;
             _instanceVB = ResourceFactory.CreateBuffer(new BufferDescription(InstanceInfo.Size * _instanceCount, BufferUsage.VertexBuffer));
             InstanceInfo[] infos = new InstanceInfo[_instanceCount];
             Random r = new Random();
-            //float orbitDistance = 100f;
             for (uint i = 0; i < _instanceCount; i++)
             {
                 float angle = (float)(r.NextDouble() * Math.PI * 2);
@@ -129,30 +119,10 @@ namespace Instancing
                         1000.0f * ((float)r.NextDouble() - 0.5f),
                         200.0f * ((float)r.NextDouble() - 0.5f),
                         1000.0f * ((float)r.NextDouble() - 0.5f)),
-                    //new Vector3(
-                    //    (float)(r.NextDouble() * Math.PI * 2),
-                    //    (float)(r.NextDouble() * Math.PI * 2),
-                    //    (float)(r.NextDouble() * Math.PI * 2)),
                     new Vector3((float)(r.NextDouble()*0.3)),
                     r.Next(0, (int)rockTexture.ArrayLayers));
             }
 
-            //orbitDistance = 200f;
-            //for (uint i = _instanceCount / 2; i < _instanceCount; i++)
-            //{
-            //    float angle = (float)(r.NextDouble() * Math.PI * 2);
-            //    infos[i] = new InstanceInfo(
-            //        new Vector3(
-            //            ((float)Math.Cos(angle) * orbitDistance) + (float)(-45 + r.NextDouble() * 90),
-            //            (float)(-1.5 + r.NextDouble() * 3),
-            //            ((float)Math.Sin(angle) * orbitDistance) + (float)(-45 + r.NextDouble() * 90)),
-            //        new Vector3(
-            //            (float)(r.NextDouble() * Math.PI * 2),
-            //            (float)(r.NextDouble() * Math.PI * 2),
-            //            (float)(r.NextDouble() * Math.PI * 2)),
-            //        new Vector3((float)(r.NextDouble() * 0.05)),
-            //        r.Next(0, (int)rockTexture.ArrayLayers));
-            //}
 
             GraphicsDevice.UpdateBuffer(_instanceVB, 0, infos);
 
@@ -182,67 +152,11 @@ namespace Instancing
 
             _instancePipeline = factory.CreateGraphicsPipeline(pipelineDescriptionRocks);
 
-            //GraphicsPipelineDescription pipelineDescriptionPlanet = new GraphicsPipelineDescription()
-            //{
-            //    BlendState = BlendStateDescription.SingleOverrideBlend,
-            //    DepthStencilState = new DepthStencilStateDescription(
-            //        depthTestEnabled: true,
-            //        depthWriteEnabled: true,
-            //        comparisonKind: ComparisonKind.LessEqual),
-            //    RasterizerState = new RasterizerStateDescription(
-            //        cullMode: FaceCullMode.Back,
-            //        fillMode: PolygonFillMode.Solid,
-            //        frontFace: FrontFace.Clockwise,
-            //        depthClipEnabled: true,
-            //        scissorTestEnabled: false
-            //    ),
-            //    PrimitiveTopology = PrimitiveTopology.TriangleList,
-            //    ResourceLayouts = new ResourceLayout[] { sharedLayout, textureLayout },
-            //    ShaderSet = new ShaderSetDescription(
-            //        // The ordering of layouts directly impacts shader layout schemes
-            //        vertexLayouts: new VertexLayoutDescription[] { sharedVertexLayout, vertexLayoutPerInstance },
-            //        shaders: LoadShaders("Instance")
-            //    ),
-            //    Outputs = MainSwapchain.Framebuffer.OutputDescription
-            //};
-            // Create planet Pipeline
-            // Almost everything is the same as the rock Pipeline,
-            // except no instance vertex buffer is needed, and different shaders are used.
-            //pipelineDescriptionPlanet.ShaderSet = new ShaderSetDescription(
-            //    new[] { sharedVertexLayout },
-            //    LoadShaders("Planet"));
-            //_planetPipeline = ResourceFactory.CreateGraphicsPipeline(pipelineDescriptionPlanet);
-
-            //ProcessedModel planet = LoadEmbeddedAsset<ProcessedModel>("sphere.binary");
-            //_planetModel = planet.MeshParts[0].CreateDeviceResources(GraphicsDevice, ResourceFactory);
-
-            //byte[] planetTexData = LoadEmbeddedAsset<byte[]>(
-            //    etc2Supported
-            //        ? "lavaplanet_etc2_unorm.binary"
-            //        : "lavaplanet_bc3_unorm.binary");
-            //Texture planetTexture = KtxFile.LoadTexture(GraphicsDevice, ResourceFactory, planetTexData, pixelFormat);
-            //TextureView planetTextureView = ResourceFactory.CreateTextureView(planetTexture);
-            //_planetTextureSet = ResourceFactory.CreateResourceSet(new ResourceSetDescription(textureLayout, planetTextureView, GraphicsDevice.Aniso4xSampler));
-
             // Starfield resources
             ResourceLayout invCameraInfoLayout = ResourceFactory.CreateResourceLayout(new ResourceLayoutDescription(
             new ResourceLayoutElementDescription("InvCameraInfo", ResourceKind.UniformBuffer, ShaderStages.Fragment)));
             _viewInfoBuffer = ResourceFactory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<MatrixPair>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-            //_viewInfoSet = ResourceFactory.CreateResourceSet(new ResourceSetDescription(invCameraInfoLayout, _viewInfoBuffer));
-
-            //ShaderSetDescription starfieldShaders = new ShaderSetDescription(
-            //    Array.Empty<VertexLayoutDescription>(),
-            //    LoadShaders("Starfield"));
-
-            //_starfieldPipeline = ResourceFactory.CreateGraphicsPipeline(new GraphicsPipelineDescription(
-            //    BlendStateDescription.SingleOverrideBlend,
-            //    DepthStencilStateDescription.Disabled,
-            //    RasterizerStateDescription.CullNone,
-            //    PrimitiveTopology.TriangleList,
-            //    starfieldShaders,
-            //    new[] { invCameraInfoLayout },
-            //    MainSwapchain.Framebuffer.OutputDescription));
-
+            
             _commandList = factory.CreateCommandList();
         }
 
@@ -270,7 +184,6 @@ namespace Instancing
 
             _localRotation += delta * ((float)Math.PI * 2 / 9);
             _globalRotation += -delta * ((float)Math.PI * 2 / 240);
-            //Console.WriteLine($"Delta: {delta:f3} LocalRot: {_localRotation:f3} GlobalRot: {_globalRotation:f3}");
 
 
             _commandList.UpdateBuffer(_rotationInfoBuffer, 0, new Vector4(_localRotation, _globalRotation, 0, 0));
@@ -285,11 +198,6 @@ namespace Instancing
             _commandList.SetFramebuffer(MainSwapchain.Framebuffer);
             _commandList.ClearColorTarget(0, RgbaFloat.White);
             _commandList.ClearDepthStencil(1f);
-
-            ////// First, draw the background starfield.
-            //_commandList.SetPipeline(_starfieldPipeline);
-            //_commandList.SetGraphicsResourceSet(0, _viewInfoSet);
-            //_commandList.Draw(4);
 
             // Next, draw our orbiting rocks with instanced drawing.
             _commandList.SetPipeline(_instancePipeline);
@@ -308,15 +216,6 @@ namespace Instancing
                 indexStart: 0,
                 vertexOffset: 0,
                 instanceStart: 0);
-
-            // Next, we draw our central planet.
-            //_commandList.SetPipeline(_planetPipeline);
-            //_commandList.SetGraphicsResourceSet(1, _planetTextureSet);
-            //_commandList.SetVertexBuffer(0, _planetModel.VertexBuffer);
-            //_commandList.SetIndexBuffer(_planetModel.IndexBuffer, _planetModel.IndexFormat);
-
-            //// The planet is drawn with regular indexed drawing -- not instanced.
-            //_commandList.DrawIndexed(_planetModel.IndexCount);
 
             // End() must be called before commands can be submitted for execution.
             _commandList.End();
