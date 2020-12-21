@@ -13,6 +13,7 @@ namespace SampleBase
         private static HashSet<MouseButton> _newMouseButtonsThisFrame = new HashSet<MouseButton>();
 
         public static Vector2 MousePosition;
+        public static float WheelDelta { get; private set; }
         public static InputSnapshot FrameSnapshot { get; private set; }
 
         public static bool GetKey(Key key)
@@ -42,6 +43,7 @@ namespace SampleBase
             _newMouseButtonsThisFrame.Clear();
 
             MousePosition = snapshot.MousePosition;
+            WheelDelta = snapshot.WheelDelta;
             for (int i = 0; i < snapshot.KeyEvents.Count; i++)
             {
                 KeyEvent ke = snapshot.KeyEvents[i];
