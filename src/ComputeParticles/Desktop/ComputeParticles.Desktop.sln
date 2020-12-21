@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.808.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComputeParticles.Desktop", "ComputeParticles.Desktop.csproj", "{CA8B7ECE-42E5-424D-9217-7DA54425FDF8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CA8B7ECE-42E5-424D-9217-7DA54425FDF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA8B7ECE-42E5-424D-9217-7DA54425FDF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA8B7ECE-42E5-424D-9217-7DA54425FDF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA8B7ECE-42E5-424D-9217-7DA54425FDF8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EAFBB520-BA77-479E-8D16-043CA44B169F}
+	EndGlobalSection
+EndGlobal

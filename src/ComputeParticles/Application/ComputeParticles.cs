@@ -11,7 +11,7 @@ namespace ComputeParticles
 {
     public class ComputeParticles : SampleApplication
     {
-        public const int ParticleCount = 1024;
+        public const int ParticleCount = 2048;
 
         private DeviceBuffer _particleBuffer;
         private DeviceBuffer _screenSizeBuffer;
@@ -84,12 +84,12 @@ namespace ComputeParticles
 
             GraphicsPipelineDescription particleDrawPipelineDesc = new GraphicsPipelineDescription(
                 BlendStateDescription.SingleOverrideBlend,
-                DepthStencilStateDescription.Disabled,
+                new DepthStencilStateDescription (true, true, ComparisonKind.Always),
                 RasterizerStateDescription.Default,
                 PrimitiveTopology.PointList,
                 shaderSet,
                 new[] { particleStorageLayout, screenSizeLayout },
-                MainSwapchain.Framebuffer.OutputDescription);
+                MainSwapchain.Framebuffer.OutputDescription);;
 
             _graphicsPipeline = factory.CreateGraphicsPipeline(ref particleDrawPipelineDesc);
 
@@ -144,7 +144,7 @@ namespace ComputeParticles
             _cl.SetPipeline(_computePipeline);
             _cl.SetComputeResourceSet(0, _computeResourceSet);
             _cl.SetComputeResourceSet(1, _computeScreenSizeResourceSet);
-            _cl.Dispatch(1024, 1, 1);
+            _cl.Dispatch(ParticleCount, 1, 1);
 
             _cl.SetFramebuffer(MainSwapchain.Framebuffer);
             _cl.SetFullViewports();

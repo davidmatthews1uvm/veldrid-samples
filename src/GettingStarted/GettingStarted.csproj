@@ -9,6 +9,8 @@
     <PackageReference Include="Veldrid" Version="$(VeldridVersion)" />
     <PackageReference Include="Veldrid.StartupUtilities" Version="$(VeldridVersion)" />
     <PackageReference Include="Veldrid.Spirv" Version="$(VeldridSpirvVersion)" />
+    <PackageReference Include="Veldrid.OpenGLBindings" Version="4.8.0" />
+    <PackageReference Include="Veldrid.MetalBindings" Version="4.8.0" />
   </ItemGroup>
 
 </Project>

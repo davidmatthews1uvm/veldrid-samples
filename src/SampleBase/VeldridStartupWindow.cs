@@ -29,8 +29,8 @@ namespace SampleBase
         {
             WindowCreateInfo wci = new WindowCreateInfo
             {
-                X = 100,
-                Y = 100,
+                X = 0,
+                Y = 0,
                 WindowWidth = 1280,
                 WindowHeight = 720,
                 WindowTitle = title,
@@ -40,6 +40,9 @@ namespace SampleBase
             {
                 _windowResized = true;
             };
+            _window.FocusLost += () => { Console.WriteLine("Window Focus Lost"); };
+            _window.FocusGained += () => { Console.WriteLine("Window Focus Gained"); };
+            _window.SetCloseRequestedHandler (() => { Console.WriteLine("Window Close Requested"); return false; });
             _window.KeyDown += OnKeyDown;
         }
 
@@ -55,13 +58,13 @@ namespace SampleBase
 #if DEBUG
             options.Debug = true;
 #endif
-            _gd = VeldridStartup.CreateGraphicsDevice(_window, options, GraphicsBackend.Direct3D11);
+            _gd = VeldridStartup.CreateGraphicsDevice(_window, options, GraphicsBackend.Metal);
+
             _factory = new DisposeCollectorResourceFactory(_gd.ResourceFactory);
             GraphicsDeviceCreated?.Invoke(_gd, _factory, _gd.MainSwapchain);
 
             Stopwatch sw = Stopwatch.StartNew();
             double previousElapsed = sw.Elapsed.TotalSeconds;
-
             while (_window.Exists)
             {
                 double newElapsed = sw.Elapsed.TotalSeconds;

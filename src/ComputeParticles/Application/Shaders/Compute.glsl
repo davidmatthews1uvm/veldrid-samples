@@ -1,6 +1,6 @@
 #version 450
 
-#define PARTICLE_COUNT 1024
+#define PARTICLE_COUNT 2048
 
 struct ParticleInfo
 {
