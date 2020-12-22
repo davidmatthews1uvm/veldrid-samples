@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+
 using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
@@ -77,7 +79,7 @@ namespace SampleBase
 
             Stopwatch sw = Stopwatch.StartNew();
             double previousElapsed = sw.Elapsed.TotalSeconds;
-            while (_window.Exists)
+            while (IsWindowOpen())
             {
                 double newElapsed = sw.Elapsed.TotalSeconds;
                 float deltaSeconds = (float)(newElapsed - previousElapsed);
@@ -110,6 +112,30 @@ namespace SampleBase
         protected void OnKeyDown(KeyEvent keyEvent)
         {
             KeyPressed?.Invoke(keyEvent);
+        }
+
+        private bool IsWindowOpen()
+        {
+            bool CommandKeyIsPressed = InputTracker.GetKey(Key.WinLeft) ||
+                            InputTracker.GetKey(Key.WinRight);
+
+            bool ControlKeyIsPressed = InputTracker.GetKey(Key.ControlLeft) ||
+                            InputTracker.GetKey(Key.ControlRight);
+
+            bool WindowExists = _window.Exists;
+
+            bool WorQWasPressed = InputTracker.GetKey(Key.W) ||
+                                    InputTracker.GetKey(Key.Q);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return WindowExists && !(CommandKeyIsPressed && WorQWasPressed);
+            }
+            else
+            {
+                return WindowExists && !(ControlKeyIsPressed && WorQWasPressed);
+
+            }
         }
     }
 }
